@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Movies</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+    <string name="sort_preference">sort_preference</string>
+    <string name="default_preference">popular</string>
+
+    <string-array name="sortOrder">
+        <item>Popular</item>
+        <item>Top Rated</item>
+        <item>Favourite</item>
+    </string-array>
+
+    <string-array name="sortOrderAlias">
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>favourite</item>
+    </string-array>
+
+    <string name="trailers">TRAILERS</string>
+
+    <string name="Favourite">favourite</string>
+    <string name="markasfavourite">MARK AS FAVOURITE</string>
+    <string name="unmarkfavourite">UNMARK FAVOURITE</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

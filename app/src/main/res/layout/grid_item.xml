@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView android:id="@+id/grid_item_icon"
+    android:layout_width="180sp"
+    android:layout_height="220sp"
+    android:layout_gravity="center"
+    android:scaleType="fitXY"
+    xmlns:android="http://schemas.android.com/apk/res/android" />
