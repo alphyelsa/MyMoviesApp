@@ -52,33 +52,38 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-        mTrailerAdapter = new TrailerAdapter(getActivity(),R.layout.trailerlistitem);
+        mTrailerAdapter = new TrailerAdapter(getActivity(), R.layout.trailerlistitem);
         ListView listView = (ListView) rootView.findViewById(R.id.listoftrailers);
         listView.setAdapter(mTrailerAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Trailer trailer = mTrailerAdapter.getItem(position);
-                if(trailer!=null && trailer.getVideoUrl()!=null) {
-                    Log.i(LOG_TAG,"Opening the video: "+ trailer.getVideoUrl());
+                if (trailer != null && trailer.getVideoUrl() != null) {
+                    Log.i(LOG_TAG, "Opening the video: " + trailer.getVideoUrl());
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailer.getVideoUrl()));
                     startActivity(intent);
-                }
-                else{
-                    Log.e(LOG_TAG,"Error in loading the video url for this movie " + movie.getMovieTitle());
+                } else {
+                    Log.e(LOG_TAG, "Error in loading the video url for this movie " + movie.getMovieTitle());
                 }
             }
         });
 
-        Intent intent = getActivity().getIntent();
-        Bundle data = intent.getExtras();
-        if (data != null) {
-            movie = data.getParcelable("movie");
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            movie = arguments.getParcelable(Movie.MOVIE);
+        } else {
+
+            Intent intent = getActivity().getIntent();
+            Bundle data = intent.getExtras();
+            if (data != null) {
+                movie = data.getParcelable(Movie.MOVIE);
+            }
         }
-        if(movie!=null) {
+        if (movie != null) {
             favourite = isFavourite();
             if (favourite) {
-                Log.v(LOG_TAG,"The Movie: " + movie.getMovieTitle() + " is already marked favourite. Fetching trailer info from DB");
+                Log.v(LOG_TAG, "The Movie: " + movie.getMovieTitle() + " is already marked favourite. Fetching trailer info from DB");
 
                 //Get trailer for specific movie
                 Cursor trailerCursor = getActivity().getContentResolver().query(
@@ -91,8 +96,8 @@ public class DetailFragment extends Fragment {
 
                 ArrayList<Trailer> trailers = new ArrayList<>();
 
-                while(trailerCursor.moveToNext()){
-                    Log.v(LOG_TAG,"Loading Trailer " + trailerCursor.getString(trailerCursor.getColumnIndex(MovieContract.TrailerEntry.COLUMN_VIDEO_URL)));
+                while (trailerCursor.moveToNext()) {
+                    Log.v(LOG_TAG, "Loading Trailer " + trailerCursor.getString(trailerCursor.getColumnIndex(MovieContract.TrailerEntry.COLUMN_VIDEO_URL)));
                     trailers.add(new Trailer(trailerCursor));
                 }
                 movie.setTrailers(trailers);
@@ -101,7 +106,7 @@ public class DetailFragment extends Fragment {
                 mTrailerAdapter.setTrailers(movie.getTrailers());
                 mTrailerAdapter.notifyDataSetChanged();
             } else {
-                Log.v(LOG_TAG,"Fetching the data from MovieDB Api");
+                Log.v(LOG_TAG, "Fetching the data from MovieDB Api");
                 //Fetch Trailer Info by querying the api
                 FetchDetailTask detailTask = new FetchDetailTask(getActivity(), this.movie, this.mTrailerAdapter);
                 detailTask.execute(movie.getId());
@@ -109,11 +114,9 @@ public class DetailFragment extends Fragment {
         }
 
         Button button = (Button) rootView.findViewById(R.id.setFavourite);
-        button.setOnClickListener(new View.OnClickListener()
-        {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 buttonOperation(v);
             }
         });
@@ -121,10 +124,10 @@ public class DetailFragment extends Fragment {
         return rootView;
     }
 
-    public boolean isFavourite(){
+    public boolean isFavourite() {
         boolean isFavourite = false;
         //Query the DB for the movie record
-        Log.v(LOG_TAG,"Searching DB for Movie " + movie.getMovieTitle() + " with Id: " + movie.getId());
+        Log.v(LOG_TAG, "Searching DB for Movie " + movie.getMovieTitle() + " with Id: " + movie.getId());
         Cursor movieCursor = getActivity().getContentResolver().query(
                 MovieContract.MovieEntry.buildMovieUri(movie.getId()),
                 null, // leaving "columns" null just returns all the columns.
@@ -132,10 +135,10 @@ public class DetailFragment extends Fragment {
                 null, // values for "where" clause
                 null  // sort order
         );
-        if(movieCursor.getCount() == 1)
+        if (movieCursor.getCount() == 1)
             isFavourite = true;
         movieCursor.close();
-        return  isFavourite;
+        return isFavourite;
     }
 
     @Override
@@ -156,23 +159,22 @@ public class DetailFragment extends Fragment {
 
     }
 
-    public void buttonOperation(View view){
-        if(favourite) {
+    public void buttonOperation(View view) {
+        if (favourite) {
             //Delete the Movie Record from DB
-            getActivity().getContentResolver().delete(MovieContract.MovieEntry.buildMovieUri(movie.getId()),null,null);
+            getActivity().getContentResolver().delete(MovieContract.MovieEntry.buildMovieUri(movie.getId()), null, null);
             //Delete the corresponding trailer records
-            getActivity().getContentResolver().delete(MovieContract.TrailerEntry.buildTrailerUri(movie.getId()),null,null);
+            getActivity().getContentResolver().delete(MovieContract.TrailerEntry.buildTrailerUri(movie.getId()), null, null);
             favourite = false;
             setButtonText();
-        }
-        else{
+        } else {
             //Insert the record to db
             ContentValues movieValues = movie.getMovieAsContentValues();
             getActivity().getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, movieValues);
 
             //Insert the trailer records]
-            for(Trailer trailer: movie.getTrailers()){
-                Log.v(LOG_TAG,"Inserting trailer " + trailer.getVideoUrl() + " into DB");
+            for (Trailer trailer : movie.getTrailers()) {
+                Log.v(LOG_TAG, "Inserting trailer " + trailer.getVideoUrl() + " into DB");
                 ContentValues trailerValues = trailer.getTrailerAsContentValues();
                 getActivity().getContentResolver().insert(MovieContract.TrailerEntry.CONTENT_URI, trailerValues);
             }
@@ -182,9 +184,9 @@ public class DetailFragment extends Fragment {
         }
     }
 
-    public void setButtonText(){
-        Button favouriteButton = (Button)getActivity().findViewById(R.id.setFavourite);
-        if(favouriteButton != null) {
+    public void setButtonText() {
+        Button favouriteButton = (Button) getActivity().findViewById(R.id.setFavourite);
+        if (favouriteButton != null) {
             if (favourite) {
                 favouriteButton.setText(R.string.unmarkfavourite);
             } else {

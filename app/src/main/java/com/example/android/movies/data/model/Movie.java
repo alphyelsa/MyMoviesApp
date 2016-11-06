@@ -17,6 +17,8 @@ import java.util.ArrayList;
  */
 public class Movie implements Parcelable{
 
+    public static final String MOVIE = "movie";
+
     private String id;
     private String movieTitle;
     private String moviePoster;

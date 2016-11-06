@@ -1,7 +1,7 @@
 package com.example.android.movies.uidriver;
 
-import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -10,11 +10,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.android.movies.R;
@@ -62,7 +60,7 @@ public class MovieFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
 
         // use a grid layout manager
-        GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity(),getNumColumns());
+        GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity(), getNumColumns());
         mLayoutManager.onSaveInstanceState();
         mRecyclerView.setLayoutManager(mLayoutManager);
 
@@ -73,7 +71,7 @@ public class MovieFragment extends Fragment {
             @Override
             public boolean onLoadMore(int page, int totalItemsCount) {
                 // Triggered only when new data needs to be appended to the list
-                updateMovies(totalItemsCount/PAGE_COUNT + 1);
+                updateMovies(totalItemsCount / PAGE_COUNT + 1);
                 return true; // ONLY if more data is actually being loaded; false otherwise.
             }
         });
@@ -83,7 +81,7 @@ public class MovieFragment extends Fragment {
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
 
         // save RecyclerView state
@@ -117,6 +115,10 @@ public class MovieFragment extends Fragment {
 
         Log.v(LOG_TAG, "Setting the number of columns dynamically");
 
+        int numColumns = (getActivity().getChangingConfigurations() == Configuration.ORIENTATION_LANDSCAPE ? 3 : 2);
+
+        /*
+
         int gridViewEntrySize = getResources().getDimensionPixelSize(R.dimen.grip_view_entry_size);
         int gridViewSpacing = getResources().getDimensionPixelSize(R.dimen.grip_view_spacing);
 
@@ -124,6 +126,7 @@ public class MovieFragment extends Fragment {
         Display display = wm.getDefaultDisplay();
 
         int numColumns = (display.getWidth() - gridViewSpacing) / (gridViewEntrySize + gridViewSpacing);
+        */
         Log.v(LOG_TAG, "Number of Columns: " + numColumns);
 
         return numColumns;
@@ -136,7 +139,7 @@ public class MovieFragment extends Fragment {
     private void updateMovies(int pagenum) {
         Log.v(LOG_TAG, "updateMovies()");
         String preference = getPreference();
-        if(preference.equals(getText(R.string.Favourite))){
+        if (preference.equals(getText(R.string.Favourite))) {
             //[TODO]: Query data from DB and populate the view.
             ArrayList<Movie> movies = new ArrayList();
             Cursor movieCursor = getActivity().getContentResolver().query(
@@ -147,19 +150,18 @@ public class MovieFragment extends Fragment {
                     null // columns to group by
             );
 
-            while (movieCursor.moveToNext()){
+            while (movieCursor.moveToNext()) {
                 movies.add(new Movie(movieCursor));
             }
             mMovieAdapter.bindData(movies);
             mMovieAdapter.notifyDataSetChanged();
 
             //If length is 0, set a toast message, No Favourites Marked
-            if(movies.size() == 0){
+            if (movies.size() == 0) {
                 Log.e(LOG_TAG, "Zero Favourites!");
                 Toast.makeText(getActivity(), "No Movies Marked As Favourite", Toast.LENGTH_LONG).show();
             }
-        }
-        else {
+        } else {
             if (Network.isNetworkAvaiable(getActivity())) {
                 FetchMovieTask movieTask = new FetchMovieTask(mRecyclerView, mMovieAdapter, pagenum);
                 movieTask.execute(preference);
@@ -170,10 +172,10 @@ public class MovieFragment extends Fragment {
         }
     }
 
-    private String getPreference(){
+    private String getPreference() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String preference = sharedPrefs.getString(getText(R.string.sort_preference).toString(),"");
-        Log.v(LOG_TAG,"The preference selected: " + preference);
+        String preference = sharedPrefs.getString(getText(R.string.sort_preference).toString(), "");
+        Log.v(LOG_TAG, "The preference selected: " + preference);
         return preference;
 
     }
